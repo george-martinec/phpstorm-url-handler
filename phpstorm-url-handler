@@ -1,0 +1,19 @@
+#!/bin/bash
+
+function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+
+arg=$(urldecode "${1}")
+pattern=".*file(:\/\/|\=)(.*)(:|&line=)(.*)"
+file=$(echo "${arg}" | sed -r "s/${pattern}/\2/")
+line=$(echo "${arg}" | sed -r "s/${pattern}/\4/")
+
+if type phpstorm > /dev/null; then
+    /usr/bin/env phpstorm --line "${line}" "${file}"
+elif type pstorm > /dev/null; then
+    /usr/bin/env pstorm --line "${line}" "${file}"
+elif type wmctrl > /dev/null; then
+    filename=$(basename "$file")
+    /usr/bin/env wmctrl -i -a $(wmctrl -l | grep "${filename}" | tail -n 1 | cut -d ' ' -f1)
+fi
+
+exit 0
